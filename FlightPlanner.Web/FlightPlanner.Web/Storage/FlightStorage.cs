@@ -16,7 +16,7 @@ namespace FlightPlanner.Web.Storage
         {
             lock (flightLock)
             {
-                return _flights.LastOrDefault(f => f.Id == id);
+                return _flights.FirstOrDefault(f => f.Id == id);
             }
         }
 
