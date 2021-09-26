@@ -1,10 +1,8 @@
-﻿using System.Linq;
-using FlightPlanner.Web.DbContext;
+﻿using FlightPlanner.Web.DbContext;
 using FlightPlanner.Web.Models;
 using FlightPlanner.Web.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace FlightPlanner.Web.Controllers
 {
@@ -13,7 +11,7 @@ namespace FlightPlanner.Web.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-        private static FlightPlannerDbContext _context;
+        private readonly FlightPlannerDbContext _context;
         public AdminController(FlightPlannerDbContext context)
         {
             _context = context;
@@ -34,12 +32,12 @@ namespace FlightPlanner.Web.Controllers
         [Route("flights")]
         public IActionResult AddFlightRequest(Flight flight)
         {
-            if (FlightStorage.NotAbleToAcceptWrongValues(flight) ||
-                FlightStorage.NotAbleToAcceptSameAirports(flight) ||
-                FlightStorage.NotAbleToAcceptStrangeDates(flight))
+            if (FlightStorage.FlightHasWrongValues(flight) ||
+                FlightStorage.FlightHasSameAirports(flight) ||
+                FlightStorage.FlightHasStrangeDates(flight))
                 return BadRequest();
 
-            if (FlightStorage.NotAbleToAddSameFlight(flight, _context))
+            if (FlightStorage.SameFlightAlreadyExists(flight, _context))
                 return Conflict();
 
             FlightStorage.AddFlight(flight, _context);

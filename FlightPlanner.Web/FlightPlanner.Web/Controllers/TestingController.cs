@@ -8,7 +8,7 @@ namespace FlightPlanner.Web.Controllers
     [ApiController]
     public class TestingController : ControllerBase
     {
-        private static FlightPlannerDbContext _context;
+        private readonly FlightPlannerDbContext _context;
         public TestingController(FlightPlannerDbContext context)
         {
             _context = context;

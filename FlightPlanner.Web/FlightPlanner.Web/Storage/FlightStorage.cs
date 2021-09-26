@@ -11,7 +11,6 @@ namespace FlightPlanner.Web.Storage
     {
         private static PageResult _pageResults = new PageResult();
         private static readonly object flightLock = new object();
-        private static int _id;
 
         public static Flight GetById(int id, FlightPlannerDbContext _context)
         {
@@ -36,16 +35,13 @@ namespace FlightPlanner.Web.Storage
         {
             lock (flightLock)
             {
-
                 _context.Flights.Add(flight);
                 _context.SaveChanges();
-
-
                 return flight;
             }
         }
 
-        public static bool NotAbleToAddSameFlight(Flight flight, FlightPlannerDbContext _context)
+        public static bool SameFlightAlreadyExists (Flight flight, FlightPlannerDbContext _context)
         {
             lock (flightLock)
             {
@@ -59,7 +55,7 @@ namespace FlightPlanner.Web.Storage
             }
         }
 
-        public static bool NotAbleToAcceptWrongValues(Flight flight)
+        public static bool FlightHasWrongValues(Flight flight)
         {
             return flight.From == null ||
                    string.IsNullOrEmpty(flight.From.Country) ||
@@ -74,12 +70,12 @@ namespace FlightPlanner.Web.Storage
                    flight.ArrivalTime == null;
         }
 
-        public static bool NotAbleToAcceptSameAirports(Flight flight)
+        public static bool FlightHasSameAirports(Flight flight)
         {
             return flight.From.AirportCode.ToUpper().Trim() == flight.To.AirportCode.ToUpper().Trim();
         }
 
-        public static bool NotAbleToAcceptStrangeDates(Flight flight)
+        public static bool FlightHasStrangeDates(Flight flight)
         {
             return Convert.ToDateTime(flight.DepartureTime) >= Convert.ToDateTime(flight.ArrivalTime);
         }
@@ -99,20 +95,20 @@ namespace FlightPlanner.Web.Storage
             }
         }
 
-        public static Airport[] SearchForAirports(string phrase, FlightPlannerDbContext _context)
+        public static IQueryable<Airport> SearchForAirports(string phrase, FlightPlannerDbContext _context)
         {
             lock (flightLock)
             {
                 phrase = phrase.ToUpper().Trim();
-                Flight flight = _context.Flights.Include(f => f.From).FirstOrDefault(f =>
-                    f.From.AirportCode.ToUpper().StartsWith(phrase) ||
-                    f.From.City.ToUpper().StartsWith(phrase) ||
-                    f.From.Country.ToUpper().StartsWith(phrase));
-                return new[] { flight.From };
+                IQueryable<Airport> airport = _context.Airports.Where(f =>
+                    f.AirportCode.ToUpper().StartsWith(phrase) ||
+                    f.City.ToUpper().StartsWith(phrase) ||
+                    f.Country.ToUpper().StartsWith(phrase));
+                return airport;
             }
         }
 
-        public static bool NotAbleToSearchSameFlights(FlightSearch search)
+        public static bool FlightHasSameFlightsFromTo(FlightSearch search)
         {
             return search.From == search.To;
         }
